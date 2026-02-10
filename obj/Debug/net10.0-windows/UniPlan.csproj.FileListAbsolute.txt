@@ -33,3 +33,4 @@ D:\CODE\UniPlan\UniPlan\obj\Debug\net10.0-windows\refint\UniPlan.dll
 D:\CODE\UniPlan\UniPlan\obj\Debug\net10.0-windows\UniPlan.pdb
 D:\CODE\UniPlan\UniPlan\obj\Debug\net10.0-windows\UniPlan.genruntimeconfig.cache
 D:\CODE\UniPlan\UniPlan\obj\Debug\net10.0-windows\ref\UniPlan.dll
+D:\Code\UniPlan\UniPlan\obj\Debug\net10.0-windows\UniPlan.sourcelink.json

@@ -41,13 +41,11 @@ namespace UniPlan
 
         private void FillTimeCombos()
         {
-            // ۱. ساعت کلاس (فقط ساعت‌های رند 08:00 تا 20:00)
             var classTimes = new List<string>();
             for (int h = 8; h <= 20; h++) classTimes.Add($"{h:D2}:00");
             CmbStartTime.ItemsSource = classTimes;
             CmbEndTime.ItemsSource = classTimes;
 
-            // ۲. ساعت آزمون (08:00 تا 16:00 با گام ۳۰ دقیقه)
             var examTimes = new List<string>();
             for (int h = 8; h <= 16; h++)
             {
@@ -56,7 +54,6 @@ namespace UniPlan
             }
             CmbExamTime.ItemsSource = examTimes;
 
-            // مقادیر پیش‌فرض
             CmbStartTime.SelectedItem = "08:00";
             CmbEndTime.SelectedItem = "10:00";
             CmbExamTime.SelectedItem = "08:00";
@@ -64,13 +61,11 @@ namespace UniPlan
 
         private void LoadRecordToUI(ClassRecord rec)
         {
-            // ۱. پر کردن فیلدهای متنی ساده
             TxtCourseTitle.Text = rec.CourseTitle;
             TxtCourseCode.Text = rec.CourseCode;
             TxtInstructor.Text = rec.MainInstructor;
             TxtCapacity.Text = rec.Capacity;
 
-            // ۲. ست کردن نیمسال در کمبوباکس
             foreach (ComboBoxItem item in CmbSemester.Items)
             {
                 if (item.Content.ToString() == rec.Semester)
@@ -80,7 +75,6 @@ namespace UniPlan
                 }
             }
 
-            // ۳. جدا کردن ساعت و تاریخ آزمون - فرمت: (08:30)1404/03/31
             if (!string.IsNullOrEmpty(rec.ExamDate) && rec.ExamDate.Contains(")"))
             {
                 string[] examParts = rec.ExamDate.Split(')');
@@ -92,10 +86,8 @@ namespace UniPlan
                 TxtExamDateShamsi.Text = rec.ExamDate;
             }
 
-            // ۴. جدا کردن روز و ساعت کلاس - فرمت: شنبه از 08:00 تا 10:00
             if (!string.IsNullOrEmpty(rec.ClassTime))
             {
-                // استخراج روز (اولین کلمه قبل از فاصله)
                 string dayPart = rec.ClassTime.Split(' ')[0];
                 foreach (ComboBoxItem d in CmbClassDay.Items)
                 {
@@ -106,10 +98,8 @@ namespace UniPlan
                     }
                 }
 
-                // استخراج ساعت شروع و پایان با استفاده از کلمات "از" و "تا"
                 try
                 {
-                    // پیدا کردن متن بین "از" و "تا"
                     int indexFrom = rec.ClassTime.IndexOf("از ") + 3;
                     int indexTo = rec.ClassTime.IndexOf(" تا");
 
@@ -124,7 +114,6 @@ namespace UniPlan
                 }
                 catch
                 {
-                    // اگر فرمت قدیمی بود یا خطایی رخ داد، فیلدها خالی نمانند
                     CmbStartTime.SelectedIndex = 0;
                     CmbEndTime.SelectedIndex = 1;
                 }
@@ -135,55 +124,44 @@ namespace UniPlan
         {
             HideError();
 
-            // استخراج مقادیر
             var semester = (CmbSemester.SelectedItem as ComboBoxItem)?.Content?.ToString();
             var day = (CmbClassDay.SelectedItem as ComboBoxItem)?.Content?.ToString();
             var startTimeStr = CmbStartTime.SelectedItem?.ToString();
             var endTimeStr = CmbEndTime.SelectedItem?.ToString();
             var examTimeStr = CmbExamTime.SelectedItem?.ToString();
 
-            // --- شروع ارورهای تعریف شده ---
-
-            //  بررسی خالی بودن نام مدرس ارور جدید)
             if (string.IsNullOrWhiteSpace(TxtInstructor.Text))
             { ShowError("❌ نام مدرس اصلی را وارد کنید."); return; }
 
-            // ۱. چک کردن خالی نبودن نام درس
             if (string.IsNullOrWhiteSpace(TxtCourseTitle.Text))
             { ShowError("❌ نام درس نمی‌تواند خالی باشد."); return; }
 
-            // ۲. چک کردن کد درس (فقط عدد مثبت)
             if (!long.TryParse(TxtCourseCode.Text.Trim(), out long code) || code <= 0)
             {
                 ShowError("❌ کد درس باید یک عدد مثبت و معتبر باشد (بدون حروف).");
                 return;
             }
 
-            // ۳. چک کردن ظرفیت (فقط عدد مثبت)
             if (!int.TryParse(TxtCapacity.Text.Trim(), out int cap) || cap <= 0)
             {
                 ShowError("❌ ظرفیت باید یک عدد مثبت و معتبر باشد.");
                 return;
             }
 
-            // ۳. چک کردن تاریخ شمسی
             if (!IsValidShamsiDate(TxtExamDateShamsi.Text.Trim()))
             { ShowError("❌ تاریخ آزمون نامعتبر است. نمونه: 1405/01/15"); return; }
 
-            // ۴. چک کردن منطق ساعت‌ها
             TimeSpan start = TimeSpan.Parse(startTimeStr);
             TimeSpan end = TimeSpan.Parse(endTimeStr);
 
             if (start >= end)
             { ShowError("❌ ساعت شروع کلاس نمی‌تواند بعد از ساعت پایان باشد!"); return; }
 
-            // ۵. ارور تداخل زمانی
             if (HasTimeOverlap(semester, day, start, end))
             {
                 ShowError($"⚠️ تداخل! در روز {day} برای نیمسال {semester} در این ساعت کلاس دیگری رزرو شده.");
                 return;
             }
-            // بررسی تکراری نبودن کد درس در همان نیمسال
             bool isDuplicateCode = _allRecords.Any(r =>
                 r.Semester == semester &&
                 r.CourseCode == TxtCourseCode.Text.Trim() &&
@@ -195,9 +173,6 @@ namespace UniPlan
                 return;
             }
 
-            // --- پایان ارورها ---
-
-            // ذخیره‌سازی با فرمت جدید درخواستی شما
             string finalClassTime = $"{day} از {startTimeStr} تا {endTimeStr}";
             string finalExamDate = $"({examTimeStr}){TxtExamDateShamsi.Text.Trim()}";
 
@@ -216,10 +191,9 @@ namespace UniPlan
             Close();
         }
 
-        // این متد اجازه تایپ غیر از اعداد را نمی‌دهد
         private void OnlyNumericInPreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
         {
-            // اگر کاراکتر وارد شده عدد نبود، آن را نادیده بگیر
+
             e.Handled = !char.IsDigit(e.Text, e.Text.Length - 1);
         }
         private bool HasTimeOverlap(string semester, string day, TimeSpan start, TimeSpan end)
@@ -229,7 +203,6 @@ namespace UniPlan
                 if (_isEditMode && item == _editingRecord) continue;
                 if (item.Semester != semester || string.IsNullOrEmpty(item.ClassTime)) continue;
 
-                // پارس کردن فرمت جدید: "شنبه از 08:00 تا 10:00"
                 if (!item.ClassTime.StartsWith(day)) continue;
 
                 try
@@ -251,12 +224,12 @@ namespace UniPlan
         private void ShowError(string message)
         {
             TxtError.Text = message;
-            ErrorBorder.Visibility = Visibility.Visible; // نمایش کادر قرمز
+            ErrorBorder.Visibility = Visibility.Visible;
         }
 
         private void HideError()
         {
-            ErrorBorder.Visibility = Visibility.Collapsed; // مخفی کردن کادر
+            ErrorBorder.Visibility = Visibility.Collapsed;
         }
         private void BtnCancel_Click(object sender, RoutedEventArgs e) { DialogResult = false; Close(); }
 
