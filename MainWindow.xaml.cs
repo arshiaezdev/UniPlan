@@ -14,7 +14,7 @@ namespace UniPlan
 {
 
     public partial class MainWindow : Window
-    {        
+    {
         private ObservableCollection<ClassRecord> _records = new ObservableCollection<ClassRecord>();
         private System.Windows.Data.CollectionViewSource _viewSource = new System.Windows.Data.CollectionViewSource();
 
@@ -27,8 +27,6 @@ namespace UniPlan
             UpdateRecordCount();
         }
 
-
-        // ✅ شمارش رکوردها پایین صفحه
         private void UpdateRecordCount()
         {
             if (_viewSource?.View == null)
@@ -42,7 +40,6 @@ namespace UniPlan
         }
 
 
-        // ✅ افزودن رکورد جدید
         private void BtnSaveData_Click(object sender, RoutedEventArgs e)
         {
             var win = new AddEditRecordWindow(_records);
@@ -79,7 +76,6 @@ namespace UniPlan
         }
 
 
-        // ✅ ویرایش رکورد انتخاب شده
         private void BtnEditRecord_Click(object sender, RoutedEventArgs e)
         {
             if (DataGridClasses.SelectedItem is not ClassRecord selected)
@@ -93,7 +89,6 @@ namespace UniPlan
 
             if (win.ShowDialog() == true)
             {
-                // آپدیت رکورد انتخاب شده
                 selected.Semester = win.ResultRecord.Semester;
                 selected.CourseTitle = win.ResultRecord.CourseTitle;
                 selected.CourseCode = win.ResultRecord.CourseCode;
@@ -106,8 +101,6 @@ namespace UniPlan
             }
         }
 
-
-        // ✅ حذف رکورد انتخاب شده
         private void BtnDeleteRecord_Click(object sender, RoutedEventArgs e)
         {
             if (DataGridClasses.SelectedItem is not ClassRecord selected)
@@ -125,7 +118,6 @@ namespace UniPlan
                 UpdateRecordCount();
             }
         }
-        // حذف همه رکورد ها
         private void BtnDeleteAll_Click(object sender, RoutedEventArgs e)
         {
             var res = MessageBox.Show(
@@ -141,7 +133,6 @@ namespace UniPlan
             }
         }
 
-        // ✅ خروجی اکسل
         private void ExportToExcel(string path, System.Collections.Generic.List<ClassRecord> list)
         {
             try
@@ -151,50 +142,41 @@ namespace UniPlan
                 var ws = package.Workbook.Worksheets.Add("برنامه هفتگی");
                 ws.View.RightToLeft = true;
 
-                // تنظیمات صفحه برای چاپ A4 افقی
                 ws.PrinterSettings.Orientation = eOrientation.Landscape;
                 ws.PrinterSettings.PaperSize = ePaperSize.A4;
                 ws.PrinterSettings.FitToPage = true;
                 ws.PrinterSettings.FitToWidth = 1;
                 ws.PrinterSettings.FitToHeight = 1;
 
-                // تشخیص ترم از دیتای ورودی
                 string semesterName = list.FirstOrDefault()?.Semester ?? "نامشخص";
 
-                // --- ۱. تنظیم هدرهای سه گانه در ردیف ۱ ---
                 ws.Row(1).Height = 35;
 
-                // الف) سمت راست: نام و کد رشته
                 var cellRight = ws.Cells["A1:C1"];
                 cellRight.Merge = true;
                 cellRight.Value = "نام و کد رشته: ";
                 cellRight.Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
 
-                // ب) وسط: مقطع تحصیلی
                 var cellCenter = ws.Cells["F1:H1"];
                 cellCenter.Merge = true;
                 cellCenter.Value = "مقطع تحصیلی: ";
                 cellCenter.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
 
-                // ج) سمت چپ: برنامه ترم
                 var cellLeft = ws.Cells["K1:M1"];
                 cellLeft.Merge = true;
                 cellLeft.Value = $"برنامه ترم: {semesterName}";
                 cellLeft.Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
 
-                // استایل کلی ردیف هدر
                 var headerRow = ws.Cells["A1:M1"];
                 headerRow.Style.Font.Bold = true;
                 headerRow.Style.Font.Name = "Tahoma";
                 headerRow.Style.Font.Size = 10f;
                 headerRow.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
 
-                // --- ۲. تنظیم جدول اصلی (شروع از ردیف ۲) ---
                 int startHour = 8;
                 int endHour = 20;
                 string[] days = { "شنبه", "یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه" };
 
-                // هدر ساعت‌ها (خاکستری روشن برای چاپ سیاه و سفید)
                 for (int h = startHour; h < endHour; h++)
                 {
                     var cell = ws.Cells[2, h - startHour + 2];
@@ -207,7 +189,6 @@ namespace UniPlan
                     ws.Column(h - startHour + 2).Width = 18;
                 }
 
-                // هدر روزها (خاکستری تیره با متن سفید)
                 for (int i = 0; i < days.Length; i++)
                 {
                     var cell = ws.Cells[i + 3, 1];
@@ -224,7 +205,6 @@ namespace UniPlan
 
                 string Normalize(string t) => t?.Replace("ي", "ی").Replace("ك", "ک").Replace("‌", "").Replace(" ", "") ?? "";
 
-                // ۳. درج دروس زیر هم با استایل سیاه و سفید
                 foreach (var item in list)
                 {
                     if (string.IsNullOrEmpty(item.ClassTime)) continue;
@@ -265,9 +245,7 @@ namespace UniPlan
                             range.Merge = true;
 
                             range.Style.Fill.PatternType = ExcelFillStyle.Solid;
-                            // تداخل‌ها خاکستری خیلی ملایم، بقیه سفید
                             range.Style.Fill.BackgroundColor.SetColor(firstCell.Value.ToString().Contains("----------") ? Color.FromArgb(245, 245, 245) : Color.White);
-
                             range.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
                             range.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
                             range.Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.Black);
@@ -278,7 +256,6 @@ namespace UniPlan
                     }
                 }
 
-                // کادر ضخیم دور کل بدنه جدول
                 var tableArea = ws.Cells[2, 1, 7, 13];
                 tableArea.Style.Border.BorderAround(ExcelBorderStyle.Thick, Color.Black);
 
@@ -292,7 +269,6 @@ namespace UniPlan
         }
         private void ExportSemesterToExcel(string semester)
         {
-            // ۱. فیلتر کردن لیست
             var list = string.IsNullOrEmpty(semester)
                 ? _records.ToList()
                 : _records.Where(r => r.Semester == semester).ToList();
@@ -302,15 +278,13 @@ namespace UniPlan
                 MessageBox.Show("رکوردی برای خروجی وجود ندارد");
                 return;
             }
-
-            // ۲. تنظیمات ذخیره فایل
             SaveFileDialog dlg = new SaveFileDialog
             {
                 Filter = "Excel (*.xlsx)|*.xlsx",
                 FileName = $"UniPlan_{semester ?? "All"}.xlsx"
             };
 
-            if (dlg.ShowDialog() == true) // در WPF از true استفاده می‌شود
+            if (dlg.ShowDialog() == true)
             {
                 try
                 {
@@ -320,7 +294,6 @@ namespace UniPlan
                         var ws = package.Workbook.Worksheets.Add("لیست دروس");
                         ws.View.RightToLeft = true;
 
-                        // ۳. ایجاد هدرهای فایل اکسل ساده
                         string[] headers = { "نیمسال", "درس", "کددرس", "مدرس‌اصلي", "ساعت‌کلاس", "تاریخ آزمون", "ظرفیت" };
                         for (int i = 0; i < headers.Length; i++)
                         {
@@ -330,7 +303,6 @@ namespace UniPlan
                             ws.Cells[1, i + 1].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
                         }
 
-                        // ۴. درج داده‌های فیلتر شده
                         int row = 2;
                         foreach (var item in list)
                         {
@@ -346,7 +318,6 @@ namespace UniPlan
 
                         ws.Cells[ws.Dimension.Address].AutoFitColumns();
 
-                        // ۵. ذخیره نهایی در مسیر انتخاب شده
                         System.IO.File.WriteAllBytes(dlg.FileName, package.GetAsByteArray());
                         MessageBox.Show($"خروجی مربوط به {semester ?? "همه موارد"} با موفقیت ذخیره شد.");
                     }
@@ -425,8 +396,6 @@ namespace UniPlan
             ExportWeekly("چهارم");
         }
 
-
-        // ✅ ورود فایل اکسل (Import)
         private void BtnImportExcel_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog openDialog = new OpenFileDialog()
@@ -454,11 +423,10 @@ namespace UniPlan
 
                 int rowCount = ws.Dimension.End.Row;
 
-                // از ردیف 2 به بعد (چون 1 هدره)
                 for (int row = 2; row <= rowCount; row++)
                 {
                     var record = new ClassRecord()
-                    {                       
+                    {
                         Semester = ws.Cells[row, 1].Text,
                         CourseTitle = ws.Cells[row, 2].Text,
                         CourseCode = ws.Cells[row, 3].Text,
@@ -468,7 +436,6 @@ namespace UniPlan
                         Capacity = ws.Cells[row, 7].Text,
                     };
 
-                    // اگر ردیف کاملاً خالی بود، ردش کن
                     if (string.IsNullOrWhiteSpace(record.CourseTitle) &&
                         string.IsNullOrWhiteSpace(record.CourseCode))
                         continue;
@@ -485,23 +452,17 @@ namespace UniPlan
             }
         }
 
-        // ✅ ریست کردن دیتاها
         private void BtnReset_Click(object sender, RoutedEventArgs e)
         {
             if (_viewSource?.View != null)
             {
-                // حذف فیلترها
                 _viewSource.View.Filter = null;
 
-                // DataGrid رو آپدیت می‌کنیم
                 _viewSource.View.Refresh();
 
-                // شمارش رکوردها رو آپدیت کن
                 UpdateRecordCount();
             }
         }
-
-        // ✅ خروج از برنامه
         private void BtnExit_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();

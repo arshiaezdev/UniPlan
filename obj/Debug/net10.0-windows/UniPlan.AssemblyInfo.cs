@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("UniPlan")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c99ef84618a6b940e1fa388c211523d0e9b9278b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d42f211abeb40d71ec2bd7285c42c8c51db2aa02")]
 [assembly: System.Reflection.AssemblyProductAttribute("UniPlan")]
 [assembly: System.Reflection.AssemblyTitleAttribute("UniPlan")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
